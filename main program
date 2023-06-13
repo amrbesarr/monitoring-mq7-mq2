@@ -1,0 +1,70 @@
+#include <DHT.h>
+#define DHTPIN 2       // Pin DHT11 terhubung ke pin 2 Arduino
+#define DHTTYPE DHT11  // Menggunakan sensor DHT11
+#define MQ2_PIN A1     // Pin sensor MQ-2 terhubung ke pin A1 Arduino
+#define MQ7_PIN A2     // Pin sensor MQ-7 terhubung ke pin A2 Arduino
+#define BUZZER_PIN 8   // Pin buzzer terhubung ke pin 8 Arduino
+#define LED_PIN 13     // Pin LED terhubung ke pin 13 Arduino
+
+#define MQ2_THRESHOLD 250  // Ambil nilai threshold sesuai kebutuhan Anda
+#define MQ7_THRESHOLD 250 // Ambil nilai threshold sesuai kebutuhan Anda
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  pinMode(MQ2_PIN, INPUT);
+  pinMode(MQ7_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  // Baca suhu dan kelembaban menggunakan sensor DHT11
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  if (!isnan(temperature) && !isnan(humidity)) {
+    Serial.print("Suhu (C): ");
+    Serial.println(temperature);
+    Serial.print("Kelembaban (%): ");
+    Serial.println(humidity);
+  } else {
+    Serial.println("Error membaca sensor DHT11");
+  }
+
+  // Baca nilai sensor MQ-2
+  int mq2Value = analogRead(MQ2_PIN);
+  Serial.print("Nilai MQ-2 (ppm): ");
+  Serial.println(mq2Value);
+
+  // Cek apakah sensor MQ-2 mendeteksi gas
+  if (mq2Value > MQ2_THRESHOLD) {
+    Serial.println("Deteksi gas!");
+    // Lakukan tindakan peringatan atau tindakan lain sesuai kebutuhan Anda
+    digitalWrite(BUZZER_PIN, HIGH); // Nyalakan buzzer
+    digitalWrite(LED_PIN, HIGH);    // Nyalakan LED
+    delay(500);                    // Tunda selama 1 detik
+    digitalWrite(BUZZER_PIN, LOW);  // Matikan buzzer
+    digitalWrite(LED_PIN, LOW);     // Matikan LED
+  }
+
+  // Baca nilai sensor MQ-7
+  int mq7Value = analogRead(MQ7_PIN);
+  Serial.print("Nilai MQ-7 (ppm): ");
+  Serial.println(mq7Value);
+
+  // Cek apakah sensor MQ-7 mendeteksi asap
+  if (mq7Value > MQ7_THRESHOLD) {
+    Serial.println("Deteksi asap!");
+    // Lakukan tindakan peringatan atau tindakan lain sesuai kebutuhan Anda
+     digitalWrite(BUZZER_PIN, HIGH); // Nyalakan buzzer
+    digitalWrite(LED_PIN, HIGH);    // Nyalakan LED
+    delay(500);                    // Tunda selama 1 detik
+    digitalWrite(BUZZER_PIN, LOW);  // Matikan buzzer
+    digitalWrite(LED_PIN, LOW);     // Matikan LED
+  }
+
+  delay(2000); // Jeda 2 detik antara pembacaan sensor
+}
